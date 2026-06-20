@@ -158,7 +158,7 @@ function script.drawUI()
 
   ui.drawLine(p + vec2(20, 48), p + vec2(292, 48), line, 1)
 
- ui.drawImage(logoUrl, p + vec2(18, -13), p + vec2(69, 38))
+ ui.drawImage(logoUrl, p + vec2(12, 27), p + vec2(81, 96))
   ui.drawLine(p + vec2(81, 10), p + vec2(81, 38), separator, 1.5)
 
   ui.setCursor(p + vec2(92, 12))
