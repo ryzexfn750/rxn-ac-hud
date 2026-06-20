@@ -158,8 +158,8 @@ function script.drawUI()
 
   ui.drawLine(p + vec2(20, 48), p + vec2(292, 48), line, 1)
 
-   ui.drawImage(logoUrl, p + vec2(14, 40), p + vec2(77, 73))
-  ui.drawLine(p + vec2(81, 10), p + vec2(81, 32), separator, 1.5)
+  ui.drawImage(logoUrl, p + vec2(14, 10), p + vec2(77, 73))
+  ui.drawLine(p + vec2(81, 10), p + vec2(81, 38), separator, 1.5)
 
   ui.setCursor(p + vec2(92, 12))
   ui.pushFont(ui.Font.Title)
