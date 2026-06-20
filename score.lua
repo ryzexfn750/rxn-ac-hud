@@ -159,9 +159,9 @@ function script.drawUI()
   ui.drawLine(p + vec2(20, 48), p + vec2(292, 48), line, 1)
 
 ui.drawImage(logoUrl, p + vec2(15, 1), p + vec2(75, 59))
-  ui.drawLine(p + vec2(81, 14), p + vec2(81, 42), separator, 1.5)
+  ui.drawLine(p + vec2(81, 17), p + vec2(81, 45), separator, 1.5)
 
-  ui.setCursor(p + vec2(92, 12))
+  ui.setCursor(p + vec2(92, 15))
   ui.pushFont(ui.Font.Title)
   ui.pushStyleColor(ui.StyleColor.Text, white)
   ui.text("RxN AC Servers")
