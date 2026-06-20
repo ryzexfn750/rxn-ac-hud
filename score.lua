@@ -158,7 +158,7 @@ function script.drawUI()
 
   ui.drawLine(p + vec2(20, 48), p + vec2(292, 48), line, 1)
 
-  ui.drawImage(logoUrl, p + vec2(24, 12), p + vec2(68, 36))
+  ui.drawImage(logoUrl, p + vec2(24, 6), p + vec2(76, 42))
 
   ui.setCursor(p + vec2(76, 18))
   ui.pushFont(ui.Font.Title)
@@ -220,7 +220,7 @@ function script.drawUI()
   ui.popStyleColor()
 
   ui.setCursor(p + vec2(248, 118))
-  ui.pushStyleColor(ui.StyleColor.Text, soft)
+  ui.pushStyleColor(ui.StyleColor.Text, soft)    
   ui.text("Last")
   ui.popStyleColor()
 
