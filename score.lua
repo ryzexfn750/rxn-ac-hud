@@ -8,6 +8,7 @@ local crashCooldown = 0
 local lastRunScore = 0
 local statusText = "READY"
 local distanceMeters = 0
+local logoUrl = 'https://raw.githubusercontent.com/ryzexfn750/rxn-ac-hud/main/rxn_logo.png'
 
 local msg = ac.OnlineEvent({
   ac.StructItem.key("overtakeScoreEnd"),
@@ -157,7 +158,9 @@ function script.drawUI()
 
   ui.drawLine(p + vec2(20, 48), p + vec2(292, 48), line, 1)
 
-  ui.setCursor(p + vec2(24, 18))
+  ui.drawImage(logoUrl, p + vec2(24, 12), p + vec2(68, 36))
+
+  ui.setCursor(p + vec2(76, 18))
   ui.pushFont(ui.Font.Title)
   ui.pushStyleColor(ui.StyleColor.Text, white)
   ui.text("RxN AC Servers")
