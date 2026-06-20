@@ -158,8 +158,7 @@ function script.drawUI()
 
   ui.drawLine(p + vec2(20, 48), p + vec2(292, 48), line, 1)
 
- ui.drawImage(logoUrl, p + vec2(14, 0), p + vec2(77, 63))
- ui.drawImage(logoUrl, p + vec2(14, 10), p + vec2(77, 73), rgbm.colors.white, vec2(0, 0.18), vec2(1, 0.82))
+  ui.drawImage(logoUrl, p + vec2(14, 10), p + vec2(77, 73))
   ui.drawLine(p + vec2(81, 10), p + vec2(81, 38), separator, 1.5)
 
   ui.setCursor(p + vec2(92, 12))
@@ -245,5 +244,6 @@ function script.drawUI()
     ui.text("Below minimum speed")
     ui.popStyleColor()
   end
-  
+
   ui.endTransparentWindow()
+end
