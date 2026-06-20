@@ -129,8 +129,8 @@ function script.drawUI()
   local panel = rgbm(0.07, 0.07, 0.09, 0.97)
   local soft = rgbm(0.72, 0.74, 0.78, 1.00)
   local white = rgbm(0.96, 0.97, 0.99, 1.00)
-  local red = rgbm(0.95, 0.08, 0.08, 1.00)
   local line = rgbm(1.00, 1.00, 1.00, 0.08)
+  local separator = rgbm(1.00, 1.00, 1.00, 0.20)
   local barBg = rgbm(1.00, 1.00, 1.00, 0.08)
   local barFill = rgbm(0.95, 0.08, 0.08, 1.00)
 
@@ -158,9 +158,10 @@ function script.drawUI()
 
   ui.drawLine(p + vec2(20, 48), p + vec2(292, 48), line, 1)
 
-  ui.drawImage(logoUrl, p + vec2(24, 6), p + vec2(76, 42))
+  ui.drawImage(logoUrl, p + vec2(18, 10), p + vec2(76, 34))
+  ui.drawLine(p + vec2(84, 12), p + vec2(84, 36), separator, 1.5)
 
-  ui.setCursor(p + vec2(76, 18))
+  ui.setCursor(p + vec2(94, 16))
   ui.pushFont(ui.Font.Title)
   ui.pushStyleColor(ui.StyleColor.Text, white)
   ui.text("RxN AC Servers")
@@ -220,7 +221,7 @@ function script.drawUI()
   ui.popStyleColor()
 
   ui.setCursor(p + vec2(248, 118))
-  ui.pushStyleColor(ui.StyleColor.Text, soft)    
+  ui.pushStyleColor(ui.StyleColor.Text, soft)
   ui.text("Last")
   ui.popStyleColor()
 
