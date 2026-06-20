@@ -158,10 +158,10 @@ function script.drawUI()
 
   ui.drawLine(p + vec2(20, 48), p + vec2(292, 48), line, 1)
 
-  ui.drawImage(logoUrl, p + vec2(18, 10), p + vec2(76, 34))
-  ui.drawLine(p + vec2(84, 12), p + vec2(84, 36), separator, 1.5)
+  ui.drawImage(logoUrl, p + vec2(18, 13), p + vec2(69, 26))
+  ui.drawLine(p + vec2(81, 10), p + vec2(81, 32), separator, 1.5)
 
-  ui.setCursor(p + vec2(94, 16))
+  ui.setCursor(p + vec2(92, 12))
   ui.pushFont(ui.Font.Title)
   ui.pushStyleColor(ui.StyleColor.Text, white)
   ui.text("RxN AC Servers")
