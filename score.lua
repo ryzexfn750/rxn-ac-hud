@@ -8,7 +8,6 @@ local crashCooldown = 0
 local lastRunScore = 0
 local statusText = "READY"
 local distanceMeters = 0
-local overlayEnabled = true
 local logoUrl = 'https://raw.githubusercontent.com/ryzexfn750/rxn-ac-hud/main/rxn_logo.png'
 
 local msg = ac.OnlineEvent({
@@ -31,14 +30,14 @@ local function getComboForDistance(distance)
   return 1
 end
 
-local function getSharedAccent(scoreValue, comboValue)
-  if comboValue >= 20 or scoreValue >= 20000 then
+local function getComboColor(comboValue)
+  if comboValue >= 20 then
     return rgbm(1.00, 0.82, 0.18, 1.00) -- gold
-  elseif comboValue >= 10 or scoreValue >= 12000 then
+  elseif comboValue >= 10 then
     return rgbm(0.92, 0.36, 0.95, 1.00) -- magenta
-  elseif comboValue >= 5 or scoreValue >= 8000 then
+  elseif comboValue >= 5 then
     return rgbm(0.24, 0.74, 1.00, 1.00) -- cyan
-  elseif comboValue >= 2 or scoreValue >= 4000 then
+  elseif comboValue >= 2 then
     return rgbm(0.30, 1.00, 0.62, 1.00) -- green
   end
   return rgbm(0.96, 0.97, 0.99, 1.00) -- white
@@ -114,7 +113,6 @@ function script.update(dt)
     distanceMeters = distanceMeters + (speedMs * dt)
 
     comboMeter = getComboForDistance(distanceMeters)
-
     score = score + (speedKmh * comboMeter * dt * 0.5)
 
     if collisionDepth > 0.01 then
@@ -142,22 +140,6 @@ function script.update(dt)
 end
 
 function script.drawUI()
-  if not overlayEnabled then
-    ui.beginTransparentWindow("score_tracker_toggle_only", vec2(1520, 30), vec2(140, 46), true)
-    local pMini = ui.getCursor()
-
-    ui.drawRectFilled(pMini, pMini + vec2(120, 34), rgbm(0.03, 0.03, 0.04, 0.88), 10)
-    ui.drawRectFilled(pMini + vec2(4, 4), pMini + vec2(116, 30), rgbm(0.07, 0.07, 0.09, 0.96), 8)
-
-    ui.setCursor(pMini + vec2(10, 8))
-    if ui.button("Show overlay", vec2(100, 18)) then
-      overlayEnabled = true
-    end
-
-    ui.endTransparentWindow()
-    return
-  end
-
   local car = ac.getCar(0)
   local speedKmh = 0
   if car then
@@ -181,9 +163,6 @@ function script.drawUI()
   local barFill = rgbm(0.95, 0.08, 0.08, 1.00)
   local startBarFill = rgbm(0.25, 0.95, 0.45, 1.00)
 
-  local uiPos = vec2(1520, 30)
-  local uiSize = vec2(340, 270)
-
   local statusColor = rgbm(0.75, 0.75, 0.75, 1.00)
   if sStatus == "RUN" then
     statusColor = rgbm(0.25, 0.95, 0.45, 1.00)
@@ -193,94 +172,115 @@ function script.drawUI()
     statusColor = rgbm(1.00, 0.25, 0.25, 1.00)
   end
 
-  local sharedAccent = getSharedAccent(score, comboMeter)
+  local comboColor = getComboColor(comboMeter)
   local countdownProgress = math.min((below90Timer or 0) / 3.0, 1.0)
   local showCountdown = (below90Timer or 0) > 0 and isRunActive
   local startProgress = math.min(speedKmh / 90.0, 1.0)
   local showStartBar = not isRunActive and crashCooldown <= 0
+  local showAnyBar = showStartBar or showCountdown
+
+  local uiPos = vec2(1520, 30)
+  local uiSize = showAnyBar and vec2(340, 270) or vec2(340, 222)
+
+  local outerBottom = showAnyBar and 244 or 196
+  local innerBottom = showAnyBar and 236 or 188
+
+  local logoTopLeft = showAnyBar and vec2(15, 1) or vec2(12, -2)
+  local logoBottomRight = showAnyBar and vec2(75, 59) or vec2(82, 68)
+
+  local separatorTop = showAnyBar and 17 or 14
+  local separatorBottom = showAnyBar and 45 or 48
+
+  local titleCursor = showAnyBar and vec2(92, 15) or vec2(100, 18)
+
+  local scoreLabelY = showAnyBar and 60 or 58
+  local scoreValueY = showAnyBar and 78 or 80
+
+  local statusLabelY = showAnyBar and 60 or 58
+  local statusValueY = showAnyBar and 78 or 80
+
+  local statsLabelY = showAnyBar and 118 or 112
+  local statsValueY = showAnyBar and 136 or 132
 
   ui.beginTransparentWindow("score_tracker_hud", uiPos, uiSize, true)
 
   local p = ui.getCursor()
 
-  ui.drawRectFilled(p, p + vec2(316, 244), bg, 14)
-  ui.drawRectFilled(p + vec2(8, 8), p + vec2(308, 236), panel, 10)
+  ui.drawRectFilled(p, p + vec2(316, outerBottom), bg, 14)
+  ui.drawRectFilled(p + vec2(8, 8), p + vec2(308, innerBottom), panel, 10)
 
   ui.drawLine(p + vec2(20, 48), p + vec2(292, 48), line, 1)
 
-  ui.drawImage(logoUrl, p + vec2(15, 1), p + vec2(75, 59))
-  ui.drawLine(p + vec2(81, 17), p + vec2(81, 45), separator, 1.5)
+  ui.drawImage(logoUrl, p + logoTopLeft, p + logoBottomRight)
+  ui.drawLine(p + vec2(81, separatorTop), p + vec2(81, separatorBottom), separator, 1.5)
 
-  ui.setCursor(p + vec2(92, 15))
+  ui.setCursor(p + titleCursor)
   ui.pushFont(ui.Font.Title)
   ui.pushStyleColor(ui.StyleColor.Text, white)
   ui.text("RxN AC Servers")
   ui.popStyleColor()
   ui.popFont()
 
-  ui.setCursor(p + vec2(230, 14))
-  if ui.button("Hide", vec2(52, 18)) then
-    overlayEnabled = false
-  end
-
-  ui.setCursor(p + vec2(24, 60))
+  ui.setCursor(p + vec2(24, scoreLabelY))
   ui.pushStyleColor(ui.StyleColor.Text, soft)
   ui.text("CURRENT SCORE")
   ui.popStyleColor()
 
-  ui.setCursor(p + vec2(24, 78))
+  ui.setCursor(p + vec2(24, scoreValueY))
   ui.pushFont(ui.Font.Title)
-  ui.pushStyleColor(ui.StyleColor.Text, sharedAccent)
+  ui.pushStyleColor(ui.StyleColor.Text, comboColor)
   ui.text(sScore)
   ui.popStyleColor()
   ui.popFont()
 
-  ui.setCursor(p + vec2(220, 60))
+  ui.setCursor(p + vec2(220, statusLabelY))
   ui.pushStyleColor(ui.StyleColor.Text, soft)
   ui.text("STATUS")
   ui.popStyleColor()
 
-  ui.setCursor(p + vec2(220, 78))
+  ui.setCursor(p + vec2(220, statusValueY))
   ui.pushStyleColor(ui.StyleColor.Text, statusColor)
   ui.text(sStatus)
   ui.popStyleColor()
 
-  ui.setCursor(p + vec2(24, 118))
+  ui.setCursor(p + vec2(24, statsLabelY))
   ui.pushStyleColor(ui.StyleColor.Text, soft)
   ui.text("Combo")
   ui.popStyleColor()
 
-  ui.setCursor(p + vec2(24, 136))
-  ui.pushStyleColor(ui.StyleColor.Text, sharedAccent)
+  ui.setCursor(p + vec2(24, statsValueY))
+  ui.pushFont(ui.Font.Title)
+  ui.pushStyleColor(ui.StyleColor.Text, comboColor)
   ui.text("x" .. sCombo)
   ui.popStyleColor()
+  ui.popFont()
 
-  ui.setCursor(p + vec2(96, 118))
+  ui.setCursor(p + vec2(96, statsLabelY))
   ui.pushStyleColor(ui.StyleColor.Text, soft)
   ui.text("Distance")
   ui.popStyleColor()
 
-  ui.setCursor(p + vec2(96, 136))
+  ui.setCursor(p + vec2(96, statsValueY))
   ui.pushStyleColor(ui.StyleColor.Text, white)
   ui.text(sDistance .. " km")
   ui.popStyleColor()
 
-  ui.setCursor(p + vec2(192, 118))
+  ui.setCursor(p + vec2(192, statsLabelY))
   ui.pushStyleColor(ui.StyleColor.Text, soft)
   ui.text("Best")
   ui.popStyleColor()
 
-  ui.setCursor(p + vec2(192, 136))
+  ui.setCursor(p + vec2(192, statsValueY))
   ui.pushStyleColor(ui.StyleColor.Text, white)
   ui.text(sBest)
   ui.popStyleColor()
 
-  ui.setCursor(p + vec2(248, 118))
+  ui.setCursor(p + vec2(248, statsLabelY))
   ui.pushStyleColor(ui.StyleColor.Text, soft)
   ui.text("Last")
   ui.popStyleColor()
 
-  ui.setCursor(p + vec2(248, 136))
+  ui.setCursor(p + vec2(248, statsValueY))
   ui.pushStyleColor(ui.StyleColor.Text, white)
   ui.text(sLast)
   ui.popStyleColor()
