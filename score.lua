@@ -15,6 +15,7 @@ local msg = ac.OnlineEvent({
   Score = ac.StructItem.int64(),
   Multiplier = ac.StructItem.int32(),
   Car = ac.StructItem.string(64),
+  Driver = ac.StructItem.string(64),
 })
 
 local function getComboForDistance(distance)
@@ -75,6 +76,8 @@ local function finishRun()
 
   local finalScore = math.floor(score)
   local finalCombo = comboMeter
+  local driverName = tostring(ac.getDriverName(0) or "Unknown Driver")
+  local carName = tostring(ac.getCarName(0) or "Unknown Car")
 
   lastRunScore = finalScore
 
@@ -85,7 +88,8 @@ local function finishRun()
   msg({
     Score = finalScore,
     Multiplier = finalCombo,
-    Car = ac.getCarName(0)
+    Car = carName,
+    Driver = driverName
   })
 
   resetRun()
@@ -185,22 +189,22 @@ function script.drawUI()
   local outerBottom = showAnyBar and 244 or 196
   local innerBottom = showAnyBar and 236 or 188
 
-  local logoTopLeft = showAnyBar and vec2(15, 1) or vec2(12, -2)
-  local logoBottomRight = showAnyBar and vec2(75, 59) or vec2(82, 68)
+  -- header fisso
+  local logoTopLeft = vec2(15, 1)
+  local logoBottomRight = vec2(75, 59)
+  local separatorTop = 17
+  local separatorBottom = 45
+  local titleCursor = vec2(92, 15)
 
-  local separatorTop = showAnyBar and 17 or 14
-  local separatorBottom = showAnyBar and 45 or 48
+  -- contenuto dinamico
+  local scoreLabelY = showAnyBar and 60 or 56
+  local scoreValueY = showAnyBar and 78 or 74
 
-  local titleCursor = showAnyBar and vec2(92, 15) or vec2(100, 18)
+  local statusLabelY = showAnyBar and 60 or 56
+  local statusValueY = showAnyBar and 78 or 74
 
-  local scoreLabelY = showAnyBar and 60 or 58
-  local scoreValueY = showAnyBar and 78 or 80
-
-  local statusLabelY = showAnyBar and 60 or 58
-  local statusValueY = showAnyBar and 78 or 80
-
-  local statsLabelY = showAnyBar and 118 or 112
-  local statsValueY = showAnyBar and 136 or 132
+  local statsLabelY = showAnyBar and 118 or 106
+  local statsValueY = showAnyBar and 136 or 126
 
   ui.beginTransparentWindow("score_tracker_hud", uiPos, uiSize, true)
 
@@ -239,9 +243,11 @@ function script.drawUI()
   ui.popStyleColor()
 
   ui.setCursor(p + vec2(220, statusValueY))
+  if not showAnyBar then ui.pushFont(ui.Font.Title) end
   ui.pushStyleColor(ui.StyleColor.Text, statusColor)
   ui.text(sStatus)
   ui.popStyleColor()
+  if not showAnyBar then ui.popFont() end
 
   ui.setCursor(p + vec2(24, statsLabelY))
   ui.pushStyleColor(ui.StyleColor.Text, soft)
@@ -261,9 +267,11 @@ function script.drawUI()
   ui.popStyleColor()
 
   ui.setCursor(p + vec2(96, statsValueY))
+  if not showAnyBar then ui.pushFont(ui.Font.Title) end
   ui.pushStyleColor(ui.StyleColor.Text, white)
   ui.text(sDistance .. " km")
   ui.popStyleColor()
+  if not showAnyBar then ui.popFont() end
 
   ui.setCursor(p + vec2(192, statsLabelY))
   ui.pushStyleColor(ui.StyleColor.Text, soft)
@@ -271,9 +279,11 @@ function script.drawUI()
   ui.popStyleColor()
 
   ui.setCursor(p + vec2(192, statsValueY))
+  if not showAnyBar then ui.pushFont(ui.Font.Title) end
   ui.pushStyleColor(ui.StyleColor.Text, white)
   ui.text(sBest)
   ui.popStyleColor()
+  if not showAnyBar then ui.popFont() end
 
   ui.setCursor(p + vec2(248, statsLabelY))
   ui.pushStyleColor(ui.StyleColor.Text, soft)
@@ -281,9 +291,11 @@ function script.drawUI()
   ui.popStyleColor()
 
   ui.setCursor(p + vec2(248, statsValueY))
+  if not showAnyBar then ui.pushFont(ui.Font.Title) end
   ui.pushStyleColor(ui.StyleColor.Text, white)
   ui.text(sLast)
   ui.popStyleColor()
+  if not showAnyBar then ui.popFont() end
 
   local nextY = 168
 
