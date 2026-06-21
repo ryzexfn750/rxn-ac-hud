@@ -10,6 +10,10 @@ local statusText = "READY"
 local distanceMeters = 0
 local logoUrl = 'https://raw.githubusercontent.com/ryzexfn750/rxn-ac-hud/main/rxn_logo.png'
 
+-- leaderboard values (placeholder, da collegare al server)
+local currentPlace = 9999
+local bestPlace = 9999
+
 local msg = ac.OnlineEvent({
   ac.StructItem.key("overtakeScoreEnd"),
   Score = ac.StructItem.int64(),
@@ -44,6 +48,58 @@ local function getComboColor(comboValue)
   return rgbm(0.96, 0.97, 0.99, 1.00) -- white
 end
 
+local function formatPlace(placeValue)
+  if not placeValue or placeValue <= 0 then
+    return "-"
+  end
+  return tostring(placeValue)
+end
+
+local function updateLiveLeaderboardEstimate()
+  -- Placeholder temporaneo:
+  -- finché non colleghiamo la classifica server, simuliamo una posizione live
+  -- che migliora all'aumentare dello score senza rompere nulla.
+  local liveScore = math.floor(score or 0)
+
+  if liveScore <= 0 then
+    currentPlace = 9999
+    return
+  end
+
+  if liveScore >= 50000 then
+    currentPlace = 1
+  elseif liveScore >= 35000 then
+    currentPlace = 5
+  elseif liveScore >= 25000 then
+    currentPlace = 15
+  elseif liveScore >= 18000 then
+    currentPlace = 40
+  elseif liveScore >= 12000 then
+    currentPlace = 90
+  elseif liveScore >= 8000 then
+    currentPlace = 180
+  elseif liveScore >= 5000 then
+    currentPlace = 350
+  elseif liveScore >= 3000 then
+    currentPlace = 700
+  else
+    currentPlace = 999
+  end
+end
+
+local function updateBestPlaceFromRun(finalScore)
+  -- Placeholder temporaneo:
+  -- aggiorna una best place locale finché non arriva il dato reale dal server.
+  local simulatedPlace = currentPlace
+
+  if finalScore <= 0 then return end
+  if simulatedPlace <= 0 then return end
+
+  if bestPlace == 9999 or simulatedPlace < bestPlace then
+    bestPlace = simulatedPlace
+  end
+end
+
 local function resetRun()
   score = 0
   comboMeter = 1
@@ -51,6 +107,7 @@ local function resetRun()
   below90Timer = 0
   distanceMeters = 0
   isRunActive = false
+  currentPlace = 9999
 end
 
 local function startRun()
@@ -60,6 +117,7 @@ local function startRun()
   runTime = 0
   below90Timer = 0
   distanceMeters = 0
+  currentPlace = 9999
   statusText = "RUN"
 end
 
@@ -84,6 +142,8 @@ local function finishRun()
   if finalScore > personalBest then
     personalBest = finalScore
   end
+
+  updateBestPlaceFromRun(finalScore)
 
   msg({
     Score = finalScore,
@@ -118,6 +178,8 @@ function script.update(dt)
 
     comboMeter = getComboForDistance(distanceMeters)
     score = score + (speedKmh * comboMeter * dt * 0.5)
+
+    updateLiveLeaderboardEstimate()
 
     if collisionDepth > 0.01 then
       crashRun()
@@ -156,6 +218,8 @@ function script.drawUI()
   local sBest = tostring(personalBest or 0)
   local sLast = tostring(lastRunScore or 0)
   local sDistance = tostring(string.format("%.2f", (distanceMeters or 0) / 1000))
+  local sCurrentPlace = formatPlace(currentPlace)
+  local sBestPlace = formatPlace(bestPlace)
 
   local bg = rgbm(0.03, 0.03, 0.04, 0.92)
   local panel = rgbm(0.07, 0.07, 0.09, 0.97)
@@ -184,10 +248,10 @@ function script.drawUI()
   local showAnyBar = showStartBar or showCountdown
 
   local uiPos = vec2(1520, 30)
-  local uiSize = showAnyBar and vec2(340, 270) or vec2(340, 222)
+  local uiSize = showAnyBar and vec2(340, 304) or vec2(340, 256)
 
-  local outerBottom = showAnyBar and 244 or 196
-  local innerBottom = showAnyBar and 236 or 188
+  local outerBottom = showAnyBar and 278 or 230
+  local innerBottom = showAnyBar and 270 or 222
 
   -- header fisso
   local logoTopLeft = vec2(15, 1)
@@ -203,8 +267,11 @@ function script.drawUI()
   local statusLabelY = showAnyBar and 60 or 56
   local statusValueY = showAnyBar and 78 or 74
 
-  local statsLabelY = showAnyBar and 118 or 106
-  local statsValueY = showAnyBar and 136 or 126
+  local row2LabelY = showAnyBar and 118 or 106
+  local row2ValueY = showAnyBar and 136 or 126
+
+  local row3LabelY = showAnyBar and 170 or 158
+  local row3ValueY = showAnyBar and 188 or 178
 
   ui.beginTransparentWindow("score_tracker_hud", uiPos, uiSize, true)
 
@@ -249,55 +316,79 @@ function script.drawUI()
   ui.popStyleColor()
   if not showAnyBar then ui.popFont() end
 
-  ui.setCursor(p + vec2(24, statsLabelY))
+  ui.setCursor(p + vec2(24, row2LabelY))
   ui.pushStyleColor(ui.StyleColor.Text, soft)
   ui.text("Combo")
   ui.popStyleColor()
 
-  ui.setCursor(p + vec2(24, statsValueY))
+  ui.setCursor(p + vec2(24, row2ValueY))
   ui.pushFont(ui.Font.Title)
   ui.pushStyleColor(ui.StyleColor.Text, comboColor)
   ui.text("x" .. sCombo)
   ui.popStyleColor()
   ui.popFont()
 
-  ui.setCursor(p + vec2(96, statsLabelY))
+  ui.setCursor(p + vec2(96, row2LabelY))
   ui.pushStyleColor(ui.StyleColor.Text, soft)
   ui.text("Distance")
   ui.popStyleColor()
 
-  ui.setCursor(p + vec2(96, statsValueY))
+  ui.setCursor(p + vec2(96, row2ValueY))
   if not showAnyBar then ui.pushFont(ui.Font.Title) end
   ui.pushStyleColor(ui.StyleColor.Text, white)
   ui.text(sDistance .. " km")
   ui.popStyleColor()
   if not showAnyBar then ui.popFont() end
 
-  ui.setCursor(p + vec2(192, statsLabelY))
+  ui.setCursor(p + vec2(192, row2LabelY))
   ui.pushStyleColor(ui.StyleColor.Text, soft)
   ui.text("Best")
   ui.popStyleColor()
 
-  ui.setCursor(p + vec2(192, statsValueY))
+  ui.setCursor(p + vec2(192, row2ValueY))
   if not showAnyBar then ui.pushFont(ui.Font.Title) end
   ui.pushStyleColor(ui.StyleColor.Text, white)
   ui.text(sBest)
   ui.popStyleColor()
   if not showAnyBar then ui.popFont() end
 
-  ui.setCursor(p + vec2(248, statsLabelY))
+  ui.setCursor(p + vec2(248, row2LabelY))
   ui.pushStyleColor(ui.StyleColor.Text, soft)
   ui.text("Last")
   ui.popStyleColor()
 
-  ui.setCursor(p + vec2(248, statsValueY))
+  ui.setCursor(p + vec2(248, row2ValueY))
   if not showAnyBar then ui.pushFont(ui.Font.Title) end
   ui.pushStyleColor(ui.StyleColor.Text, white)
   ui.text(sLast)
   ui.popStyleColor()
   if not showAnyBar then ui.popFont() end
 
-  local nextY = 168
+  ui.setCursor(p + vec2(24, row3LabelY))
+  ui.pushStyleColor(ui.StyleColor.Text, soft)
+  ui.text("Current place")
+  ui.popStyleColor()
+
+  ui.setCursor(p + vec2(24, row3ValueY))
+  if not showAnyBar then ui.pushFont(ui.Font.Title) end
+  ui.pushStyleColor(ui.StyleColor.Text, white)
+  ui.text("#" .. sCurrentPlace)
+  ui.popStyleColor()
+  if not showAnyBar then ui.popFont() end
+
+  ui.setCursor(p + vec2(170, row3LabelY))
+  ui.pushStyleColor(ui.StyleColor.Text, soft)
+  ui.text("Best place")
+  ui.popStyleColor()
+
+  ui.setCursor(p + vec2(170, row3ValueY))
+  if not showAnyBar then ui.pushFont(ui.Font.Title) end
+  ui.pushStyleColor(ui.StyleColor.Text, white)
+  ui.text("#" .. sBestPlace)
+  ui.popStyleColor()
+  if not showAnyBar then ui.popFont() end
+
+  local nextY = 220
 
   if showStartBar then
     local startBarLeft = p + vec2(24, nextY)
